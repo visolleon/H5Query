@@ -7,8 +7,7 @@
  * Email : visolleon@gmail.com
  * Date : 2012-08-20
  */
-  (function (global){
-
+(function (global){
  	var _Q = function (obj){
 		var _eles = null,
 			_ajaxConfig = {};
