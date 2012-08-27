@@ -7,7 +7,7 @@
  * Email : visolleon@gmail.com
  * Date : 2012-08-20
  */
- (function (global){
+  (function (global){
 
  	var _Q = function (obj){
 		var _eles = null,
@@ -93,7 +93,7 @@
 			bind : function(type, fn){
 				if(_eles && _eles.length > 0){
 					for (var i = 0; i < _eles.length; i++) {
-						_eles[i].addEventListener(type, fn);
+						_eles[i].addEventListener( type, fn );
 					}
 				}
 			},
@@ -127,11 +127,13 @@
 		    addClass : function(classname){
 		    	this.each(function(){
 		    		var c = $(this).attr('class');
-		    		if(c && c.indexOf(classname) == -1) {
-			    		if(c)
-			    			c += ' ' + classname;
-			    		else
-			    			c = classname;
+		    		if(c) {
+		    			if ( c.indexOf(classname) == -1 ) {
+				    		if(c)
+				    			c += ' ' + classname;
+				    		else
+				    			c = classname;
+			    		}
 			    	}
 			    	else
 			    		c = classname;
@@ -170,10 +172,14 @@
 		    },
 
 		    index : function (obj) {
-		    	this.each(function (i){
-		    		if(this === obj) return i;
-		    	});
-		    	return -1;
+		    	var index = -1;
+		    	for(var i = 0; i <= _eles.length; i++) {
+		    		if(_eles[i] === obj) {
+		    			index = i;
+		    			break;
+		    		}
+				}
+		    	return index;
 		    },
 
 		    show : function (){
@@ -370,6 +376,7 @@
 		    document.getElementsByTagName("head")[0].appendChild(script);
 	        script.onload = function () {
 	        	complete && complete();
+	        	$(script).remove();
 	        };
 	        script.onerror = function(e){
 	        	console.log('LoadScript error, url : ' + url);
