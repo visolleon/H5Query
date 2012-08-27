@@ -10,69 +10,77 @@
  (function (global){
 
  	var _Q = function (obj){
-		var ele = null;
+		var _eles = null,
+			_ajaxConfig = {};
+
 		if(typeof(obj) == 'string'){
-			ele = document.querySelectorAll(obj);
+			_eles = document.querySelectorAll(obj);
 		}
 		else{
-			ele = [obj];
+			_eles = [obj];
 		}
 		return {
-			element : ele,
-
 			html : function (html){
-				if(this.element && this.element.length > 0){
+				if(_eles && _eles.length > 0){
 					if(arguments.length == 1){
-						for (var i = 0; i < this.element.length; i++) {
-							this.element[i].innerHTML = html;
+						for (var i = 0; i < _eles.length; i++) {
+							_eles[i].innerHTML = html;
 						};
 					}
 					else{
-						return this.element[0].innerHTML;
+						return _eles[0].innerHTML;
 					}
 				}
 			},
 
+			eq : function(i) {
+				return _Q(_eles[i]);
+			},
+
+			get : function(i){
+				return _eles[i];
+			},
+
 			css : function (name, value){
-				if(this.element && this.element.length > 0){
+				if(_eles && _eles.length > 0){
 					if(arguments.length == 2) {
-						this.element[0].style[name] = value;
+						_eles[0].style[name] = value;
 					}
 					else{
-						return this.element[0].style[name];
+						return _eles[0].style[name];
 					}
 				}
 			},
 
 			append : function (object){
-				if(this.element && this.element.length > 0){
-					for (var i = 0; i < this.element.length; i++) {
-						this.element[i].appendChild(object);
+				if(_eles && _eles.length > 0){
+					for (var i = 0; i < _eles.length; i++) {
+						_eles[i].appendChild(object);
 					}
 				}
 			},
 
 			remove : function (object){
-				if(this.element && this.element.length > 0){
-					for (var i = 0; i < this.element.length; i++) {
-						if(this.element[i].parentNode){
-							this.element[i].parentNode.removeChild(this.element[i]);
+				if(_eles && _eles.length > 0){
+					for (var i = 0; i < _eles.length; i++) {
+						if(_eles[i].parentNode){
+							_eles[i].parentNode.removeChild(_eles[i]);
 						}
 						else{
-							document.body.removeChild(this.element[i]);
+							document.body.removeChild(_eles[i]);
 						}							
 					};
 				}
 			},
 
 			insert : function (param){
-				if(this.element && this.element.length > 0){
-					for (var i = 0; i < this.element.length; i++) {
+				if(_eles && _eles.length > 0){
+					for (var i = 0; i < _eles.length; i++) {
 						var object = document.createElement(param.type);
 						if(param.id) object.id = param.id;
 						if(param.class) object.className = param.class;
 						if(param.html) object.innerHTML = param.html;
-						this.element[i].appendChild(object);
+						_eles[i].appendChild(object);
 					}
 				}
 			},
@@ -82,20 +90,20 @@
 			},
 
 			bind : function(type, fn){
-				if(this.element && this.element.length > 0){
-					for (var i = 0; i < this.element.length; i++) {
-						this.element[i].addEventListener(type, fn);
+				if(_eles && _eles.length > 0){
+					for (var i = 0; i < _eles.length; i++) {
+						_eles[i].addEventListener(type, fn);
 					}
 				}
 			},
 
 			attr : function(name, value){
-				if(this.element && this.element.length > 0){
+				if(_eles && _eles.length > 0){
 					if(arguments.length == 2){
-						 this.element[0][name] = value;
+						 _eles[0][name] = value;
 					}
 					else{
-						var attr = this.element[0].attributes[name];
+						var attr = _eles[0].attributes[name];
 						if(attr){
 
 							return attr.value;
@@ -108,10 +116,41 @@
 			hover : function(on, out){
 				this.bind('mouseover', on);
 				this.bind('mouseout', out);
-			}
+			},
+
+			each : function(fn){
+		    	for (var i = 0; i < _eles.length; i++) {
+		    		fn.bind(_eles[i])(i);
+		    	};
+		    }
 		};
 	};
 
+	// the bind method for function object
+ 	if (!Function.prototype.bind) {
+		Function.prototype.bind = function (oThis) {
+		    if (typeof this !== "function") {
+		      // closest thing possible to the ECMAScript 5 internal IsCallable function  
+		      throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
+		    }
+		  
+		    var aArgs = Array.prototype.slice.call(arguments, 1),
+		        fToBind = this,
+		        fNOP = function () {},
+		        fBound = function () {
+		          return fToBind.apply(this instanceof fNOP
+		                                 ? this
+		                                 : oThis,
+		                               aArgs.concat(Array.prototype.slice.call(arguments)));
+		        };
+		  
+		    fNOP.prototype = this.prototype;
+		    fBound.prototype = new fNOP();
+		  
+		    return fBound;
+		};
+	}
+	
 	var Extends = {
 		Insert : function (param) {
 			var object = document.createElement(param.type);
@@ -164,6 +203,12 @@
 			});
 	    },
 
+	    ajaxSetup : function(p){
+	    	if(p){
+	    		this._ajaxConfig = p;
+	    	}
+	    },
+
 	    ajax : function(p) {
 	    	var xhr = new XMLHttpRequest();
 	    	if(p.url){
@@ -179,12 +224,19 @@
 	    		else{
 	    			p.async = false;
 	    		}
+
 	    		xhr.onerror = p.error;
 	    		xhr.open(p.type, p.url, p.async);
 	    		xhr.onreadystatechange = function () {
 	    			if(xhr.readyState === 1){
 	    				if(p.beforeSend) {
 	    					p.beforeSend();
+	    				}
+	    				else{
+	    					var _ac = this._ajaxConfig;
+	    					if(_ac && _ac.global == true){
+	    						_ac.beforeSend && _ac.beforeSend();
+	    					}
 	    				}
 	    			}
 	    			else if(xhr.readyState === 4){
@@ -195,10 +247,34 @@
 	    					console.log(p.url, xhr.status);
 	    					p.error && p.error( xhr.status, xhr );
 	    				}
-    					p.complete && p.complete();
+    					if(p.complete) {
+    						p.complete();
+	    				}
+	    				else{
+	    					var _ac = this._ajaxConfig;
+	    					if(_ac && _ac.global == true){
+	    						_ac.complete && _ac.complete();
+	    					}
+	    				}
 	    			}
+
+	    			// clear timeout
+	    			timeoutt && clearTimeout(timeoutt);
 	    		}
 	    		xhr.send( p.data || null );
+
+	    		if(!p.timeout) {
+					var _ac = this._ajaxConfig;
+					if(_ac && _ac.global == true){
+						if(_ac.timeout) p.timeout = _ac.timeout;
+					}
+	    		}
+	    		// timeout
+	    		if(p.timeout) {
+	    			var timeoutt = setTimeout(function(){
+	    				xhr.abort();
+	    			}, p.timeout)
+	    		}
 	    	}
 	    	this.abort = function (){
 	    		xhr.abort();
@@ -238,7 +314,6 @@
 	        };
 	        script.src = url;
 	    }
-
 	};
 
 	for (var item in Extends) {
