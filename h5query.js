@@ -47,7 +47,8 @@
 						_eles[0].style[name] = value;
 					}
 					else{
-						return _eles[0].style[name];
+						var computedStyle = window.getComputedStyle(_eles[0])
+						return computedStyle ? computedStyle[name] : null;
 					}
 				}
 			},
@@ -98,17 +99,14 @@
 			},
 
 			attr : function(name, value){
-				if(_eles && _eles.length > 0){
-					if(arguments.length == 2){
-						 _eles[0][name] = value;
-					}
-					else{
-						var attr = _eles[0].attributes[name];
-						if(attr){
-
-							return attr.value;
-						}
-					}
+				if(arguments.length == 2){
+					this.each(function(i){
+						this.setAttribute(name, value);
+					});
+				}
+				else{
+					if(_eles && _eles.length > 0) 
+						return _eles[0].getAttribute(name);
 				}
 				return null;
 			},
@@ -119,9 +117,71 @@
 			},
 
 			each : function(fn){
-		    	for (var i = 0; i < _eles.length; i++) {
-		    		fn.bind(_eles[i])(i);
-		    	};
+				if( _eles != null ) {
+			    	for (var i = 0; i < _eles.length; i++) {
+			    		fn.bind(_eles[i])(i);
+			    	};
+		    	}
+		    },
+
+		    addClass : function(classname){
+		    	this.each(function(){
+		    		var c = $(this).attr('class');
+		    		if(c && c.indexOf(classname) == -1) {
+			    		if(c)
+			    			c += ' ' + classname;
+			    		else
+			    			c = classname;
+			    	}
+			    	else
+			    		c = classname;
+		    		$(this).attr('class', c);
+		    	});
+		    },
+
+		    removeClass : function (classname) {
+		    	this.each(function(){
+		    		var c = $(this).attr('class');
+		    		if(c && c.indexOf(classname) != -1)
+		    			$(this).attr('class', c.replace(classname, ''));
+		    	});
+		    },
+
+			toggleClass : function (c1, c2) {
+		    	this.each(function(){
+		    		var c = $(this).attr('class');
+			    	if(arguments.length >= 2){
+			    		if(c.indexOf(c1) != -1) {
+			    			$(this).removeClass(c1);
+			    			$(this).addClass(c2);
+			    		}
+			    		else{
+			    			$(this).removeClass(c2);
+			    			$(this).addClass(c1);
+			    		}
+			    	}
+			    	else{
+			    		if(c.indexOf(c1) != -1)
+			    			$(this).removeClass(c1);
+			    		else
+			    			$(this).addClass(c1);
+			    	}
+			    });
+		    },
+
+		    index : function (obj) {
+		    	this.each(function (i){
+		    		if(this === obj) return i;
+		    	});
+		    	return -1;
+		    },
+
+		    show : function (){
+		    	this.css('display', 'block');
+		    },
+
+		    hide : function (){
+				this.css('display', 'none');
 		    }
 		};
 	};
