@@ -150,7 +150,7 @@
 		    return fBound;
 		};
 	}
-	
+
 	var Extends = {
 		Insert : function (param) {
 			var object = document.createElement(param.type);
@@ -281,7 +281,7 @@
 	    	};
 	    },
 
-	    getJSON : function (url, callback){
+	    getJSON : function (url, callback, complete){
 	        var rNumber = '_';
 	    	var reg = /[\?\&]callback=([_\-a-zA-Z0-9]*)/;
 	        if(!reg.test(url)) {
@@ -299,15 +299,17 @@
 		    	}
 		    }
 
-	        var tempcode = 'window.' + rNumber + ' = function (data) { if (callback) callback(eval(data)); }';
-	        eval(tempcode);
-	        console.log(tempcode);
+	        global[rNumber] = function (data) { 
+	        	if (this.fn) this.fn(eval(data));
+	        	delete global[this.fnName];
+	        }
+	        .bind( { fn : callback, fnName : rNumber } );
 
 	        var script = document.createElement("script")
 	        script.type = "text/javascript";
 		    document.getElementsByTagName("head")[0].appendChild(script);
 	        script.onload = function () {
-	            
+	        	complete && complete();
 	        };
 	        script.onerror = function(e){
 	        	console.log('LoadScript error, url : ' + url);
